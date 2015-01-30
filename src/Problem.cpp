@@ -14,11 +14,12 @@ Problem::Problem(){
 }
 
 
+//returns a vector of all actions that can be performed from a given state.
 vector<Action> Problem::get_available_actions_from(const State & current_state){
 	vector<Action> result;
 	for (vector<Action>::iterator i = this->all_available_actions.begin(); i != all_available_actions.end(); ++i)
 	{
-		if(i->is_valid_action_from(current_state))
+		if(Action::check_valid_action(current_state, *i));
 			result.push_back(*i);
 	}
 
