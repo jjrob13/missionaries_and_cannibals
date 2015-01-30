@@ -2,7 +2,7 @@ project(missionaries_and_cannibals C CXX)
 cmake_minimum_required(VERSION 2.8)
 
  IF(CMAKE_COMPILER_IS_GNUCXX)
-SET(CMAKE_CXX_FLAGS "-std=gnu++14 -g3 -ggdb") #Turn on C++14 and advanced debugging support
+SET(CMAKE_CXX_FLAGS "-std=gnu++11 -g3 -ggdb") #Turn on C++14 and advanced debugging support
 ENDIF()
 
 set(MAIN_FILE src/Main.cpp)
