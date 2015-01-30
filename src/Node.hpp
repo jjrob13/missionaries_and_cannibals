@@ -15,8 +15,11 @@ private:
 	double total_path_cost_to_state;
 
 public:
+	//Constructor Params: (current_state, parent_node, action_from_prev_state, current_path_cost)
 	Node(const State &, Node *, const Action &, double);
 	Node();
+
+	//accessors
 	const State get_state();
 	Node* get_parent_node();
 	const Action get_action();
