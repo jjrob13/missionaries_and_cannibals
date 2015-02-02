@@ -3,7 +3,7 @@ An assignment for my CSE 471, Intro to AI, class.  The classic problem of having
  
 Guide: 
 Requirements: 
-gcc 4.9 (for C++14) 
+gcc 4.8 (for C++11) 
 cmake 2.8 
  
 Command line Compilation Steps: 
