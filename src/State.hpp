@@ -26,7 +26,8 @@ public:
 	//overloading the '==' operator for easy state comparison.
 	bool operator==(const State & s){
 		return (this->missionaries[0] == s.missionaries[0]) && (this->missionaries[1] == s.missionaries[1]) &&
-				(this->cannibals[0] == s.cannibals[0]) && (this->cannibals[1] == s.cannibals[1]) && (this->boat_is_on_left == s.boat_is_on_left);
+				(this->cannibals[0] == s.cannibals[0]) && (this->cannibals[1] == s.cannibals[1]) && 
+				(this->boat_is_on_left == s.boat_is_on_left);
 	}
 };
 

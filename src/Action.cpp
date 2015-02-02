@@ -58,11 +58,48 @@ State Action::perform_action(State & current_state){
 	return State(missionaries, cannibals, this->dir == LEFT);
 }
 
-
+//static function to easily check against the set of rules if an action is valid given a state
 bool Action::check_valid_action(State & current_state, Action & action_to_perform){
-	
-	//Needs to be implemented
-	return true;
+	if(current_state.is_boat_on_left()){ //if the current state has boat on the left, return false if boat is going left
+		if(action_to_perform.get_direction() == 0){	return false; }
+	}
+	else{ //boat is currently on right, return false if boat is going right
+		if(action_to_perform.get_direction() == 1){	return false; }
+	}
+	//check if the boat moves without any people
+	if(action_to_perform.get_person1() == NONE && action_to_perform.get_person2() == NONE){ return false;}
+
+	array<int, 2> missionaries = current_state.get_missionary_array();
+	array<int, 2> cannibals = current_state.get_cannibal_array();
+
+	int moving_miss = 0, moving_cann = 0, l_miss = missionaries[0], r_miss = missionaries[1], l_cann = cannibals[0], r_cann = cannibals[1];
+	//count the number of missionaries and cannibals to move
+	if(action_to_perform.get_person1() == 0){ 	moving_miss++; }
+	else if(action_to_perform.get_person1() == 1){ 	moving_cann++; }
+
+	if(action_to_perform.get_person2() == 0){ 	moving_miss++; }
+	else if(action_to_perform.get_person2() == 1){ 	moving_cann++; }
+
+	if(action_to_perform.get_direction() == 0) //boat going left->right
+	{
+		l_cann += moving_cann;
+		l_miss += moving_miss;
+		r_cann -= moving_cann;
+		r_miss -= moving_miss;
+	}
+	else //boat going right->left
+	{
+		l_cann -= moving_cann;
+		l_miss -= moving_miss;
+		r_cann += moving_cann;
+		r_miss += moving_miss;
+	}
+
+	if(l_cann < 0 || l_miss < 0 || r_cann < 0 || r_miss < 0){	return false; } //not enough number of miss/cann to move
+	if((l_cann > l_miss) && l_miss != 0){	return false; } //after move, cannibals outnumber missionaries on left side
+	if((r_cann > r_miss) && r_miss != 0){	return false; } //after move, cannibals outnumber missionaries on right side
+
+	return true; //all checks have been passed
 }
 
 Person Action::get_person1(){
