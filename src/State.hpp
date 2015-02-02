@@ -21,12 +21,12 @@ public:
 	//accessors
 	std::array<int, 2> get_missionary_array();
 	std::array<int, 2> get_cannibal_array();
-
+	bool is_boat_on_left();
 	
 	//overloading the '==' operator for easy state comparison.
 	bool operator==(const State & s){
 		return (this->missionaries[0] == s.missionaries[0]) && (this->missionaries[1] == s.missionaries[1]) &&
-				(this->cannibals[0] == s.cannibals[0]) && (this->cannibals[1] == s.cannibals[1]);
+				(this->cannibals[0] == s.cannibals[0]) && (this->cannibals[1] == s.cannibals[1]) && (this->boat_is_on_left == s.boat_is_on_left);
 	}
 };
 

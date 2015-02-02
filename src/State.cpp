@@ -27,3 +27,8 @@ array<int, 2> State::get_cannibal_array(){
 	array<int, 2> copy_of_array = this->cannibals;
 	return copy_of_array;
 }
+
+//returns boolean variable on the current location of the boat
+bool State::is_boat_on_left(){
+	return this->boat_is_on_left;
+}
