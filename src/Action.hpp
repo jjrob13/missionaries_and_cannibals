@@ -1,6 +1,8 @@
 #ifndef GUARD_Action_hpp
 #define GUARD_Action_hpp
 #include "State.hpp"
+#include <string>
+using std::string;
 
 
 //enums to represent each actor and direction
@@ -13,6 +15,8 @@ private:
 	//instance variablea.
 	Person person1, person2;
 	Direction dir;
+
+	const string person_to_string(Person);
 
 public:
 
@@ -49,6 +53,8 @@ public:
 		//Case 3: different passengers.
 		return false;
 	}
+
+	const string to_string();
 
 };
 
