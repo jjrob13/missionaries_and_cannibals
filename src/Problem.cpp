@@ -20,7 +20,7 @@ vector<Action> Problem::get_available_actions_from(State current_state){
 	for (vector<Action>::iterator i = this->all_available_actions.begin(); i != all_available_actions.end(); ++i)
 	{
 		//if the action can be performed, perform it.
-		if(Action::check_valid_action(current_state, *i));
+		if(Action::check_valid_action(current_state, *i))
 			result.push_back(*i); //add to result vector
 	}
 
@@ -29,4 +29,8 @@ vector<Action> Problem::get_available_actions_from(State current_state){
 
 bool Problem::goal_test(const State & current_state){
 	return this->goal_state == current_state;
+}
+
+const State Problem::get_initial_state(){
+	return this->initial_state;
 }
