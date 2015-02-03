@@ -2,6 +2,7 @@
 #define GUARD_State_hpp
 
 #include <array>
+#include <string>
 class State{
 private:
 
@@ -29,6 +30,8 @@ public:
 				(this->cannibals[0] == s.cannibals[0]) && (this->cannibals[1] == s.cannibals[1]) && 
 				(this->boat_is_on_left == s.boat_is_on_left);
 	}
+
+	const std::string to_string() const;
 };
 
 #endif

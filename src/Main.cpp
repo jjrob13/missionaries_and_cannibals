@@ -36,13 +36,9 @@ bool is_in_frontier(deque<Node *> frontier, State child_state);
 
 int main(int argc, const char *argv[])
 {
+
+
 	vector<Action> all_actions = get_all_actions();
-
-	for(vector<Action>::iterator it = all_actions.begin(); it != all_actions.end(); it++){
-		cout << it->get_direction() << " ; " << it->get_person1() << " ; " << it->get_person2() << endl;
-	}
-
-	//test_check_valid();
 	
 	//problem set-up
 	State initial_state({3, 0}, {3, 0}, true);
@@ -50,15 +46,6 @@ int main(int argc, const char *argv[])
 	State goal_state({0, 3},{0, 3}, false);
 	Problem main_problem(initial_state, goal_state, all_actions);
 
-	//I WAS JUST TESTING THE is_in_frontier and is_in_explored functions
-
-	State initial_state1({3, 0}, {3, 0}, true);
-	deque<Node*> explored;
-	Action empty;
-	explored.push_back(new Node(main_problem.get_initial_state(), 0, empty, 0));
-
-	cout << ((is_in_frontier(explored, goal_state)) ? "TRUE" : "FALSE") << endl;
-	cout << ((is_in_frontier(explored, initial_state)) ? "TRUE" : "FALSE") << endl;
 
 	BREADTH_FIRST_SEARCH(main_problem);
 
@@ -105,7 +92,6 @@ bool BREADTH_FIRST_SEARCH(Problem & problem)
 {
 	Action empty_action; //no initial action
 	Node * init_node = new Node(problem.get_initial_state(), 0, empty_action, 0); //initial node created
-	if(problem.goal_test(init_node->get_state())){ PRINT_SOLUTION(init_node); return true;} //if initial state passes, goal has been found
 
 	deque<Node *>frontier; //frontier FIFO queue
 	deque<State>explored; //explored SET 
@@ -120,18 +106,18 @@ bool BREADTH_FIRST_SEARCH(Problem & problem)
 		explored.push_front(node_state); //add the state to the set
 		
 		vector<Action> problem_actions = problem.get_available_actions_from(node_state); //grab all the possible actions given a state
+
 		for(vector<Action>::iterator it = problem_actions.begin(); it != problem_actions.end(); it++) //iterate through all of these possible actions
 		{
 			Node *child = CHILD_NODE(problem, node, *it); //generate a child node given the action iterated with
 			State child_state = child->get_state(); //grab the state of the child node
-			if(! ((is_in_explored(explored, child_state)) || (is_in_frontier(frontier, child_state)) ) ) //if the child_state is not in explored or frontier
+			if(! (is_in_explored(explored, child_state) || is_in_frontier(frontier, child_state) ) ) //if the child_state is not in explored or frontier
 			{
 				if(problem.goal_test(child_state)){ PRINT_SOLUTION(child); return true;} //test for the solution
 					
 				frontier.push_back(child);
 			}
 		}
-		cout << "LOOP: " << loopcount << endl; //just as a test to see that the program is still running
 		++loopcount;
 		 
 	}
@@ -169,18 +155,20 @@ Node * CHILD_NODE(Problem & current_problem, Node * parent_node, Action & applie
 	return new Node(new_state, parent_node, applied_action, path_cost);
 }
 
-//prints the solution actions (backwards for now, change later)
+//solution now prints in the correct order using recursion
 void PRINT_SOLUTION(Node * final_node)
 {
-	cout << "SOLUTION TO BE PRINTED";
-	string c;
-	std::cin >> c; //temporary pause
-	Node * temp_node = final_node;
-	while(temp_node != 0){
-		Action action_performed = temp_node->get_action();
-		cout << "Action: " + action_performed.to_string() << endl;
-		temp_node = temp_node->get_parent_node();
+	if(final_node->get_parent_node() == NULL){
+		cout << "Start State: " << endl;
+		cout << (final_node->get_state()).to_string() << endl << endl;
+		return;
 	}
+
+	PRINT_SOLUTION(final_node->get_parent_node());
+	Action action_performed = final_node->get_action();
+	cout << "Action: " + action_performed.to_string() << endl;
+
+	cout << (final_node->get_state()).to_string() << endl << endl;
 
 }
 

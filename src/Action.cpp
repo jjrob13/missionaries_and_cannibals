@@ -1,5 +1,7 @@
 #include "Action.hpp"
 #include <array>
+#include <sstream>
+using std::stringstream;
 using std::array;
 using std::string;
 Action::Action(Direction dir, Person person1, Person person2){
@@ -40,20 +42,20 @@ State Action::perform_action(State & current_state){
 	if(this->person1 == MISSIONARY){
 
 		missionaries[(int)this->dir]++;
-		missionaries[((int)this->dir)+1 % 2]--;
+		missionaries[(((int)this->dir)+1) % 2]--;
 	}else{
 		cannibals[(int)this->dir]++;
-		cannibals[((int)this->dir)+1 % 2]--;
+		cannibals[(((int)this->dir)+1) % 2]--;
 	}
 
 	//move person two if necessary
 	if(this->person2 != NONE){
 		if(this->person2 == MISSIONARY){
 			missionaries[(int)this->dir]++;
-			missionaries[((int)this->dir)+1 % 2]--;
+			missionaries[(((int)this->dir)+1) % 2]--;
 		}else{
 			cannibals[(int)this->dir]++;
-			cannibals[((int)this->dir)+1 % 2]--;
+			cannibals[(((int)this->dir)+1) % 2]--;
 		}
 	}
 
@@ -117,11 +119,13 @@ Direction Action::get_direction(){
 }
 
 const string Action::to_string(){
+	stringstream ss;
+	ss << "Move " << person_to_string(this->person1) << (this->person2 != NONE ? " and " + person_to_string(this->person2) : "") << " ";
 	string direction = (this->dir == LEFT) ? "LEFT" : "RIGHT";
-	string person1 = person_to_string(this->person1);
-	string person2 = person_to_string(this->person2);
 
-	return "Direction: " + direction + " Person 1: " + person1 + " Person 2: " + person2;
+	ss << direction;
+
+	return ss.str();
 }
 	
 const string Action::person_to_string(Person person){
