@@ -26,5 +26,8 @@ public:
 	//test whether the passed state is a goal state.
 	bool goal_test(const State &);
 
+	//grab initial state of problem
+	const State get_initial_state();
+
 };
 #endif
