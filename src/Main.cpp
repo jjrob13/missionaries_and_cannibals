@@ -21,35 +21,111 @@ using std::deque;
 //helper function that generates all of the possible actions that can be performed.
 vector<Action> get_all_actions();
 
-//prototype for test
-void test_check_valid();
-
 //function to generate a child node (not sure where to put this really)
 Node * CHILD_NODE(Problem &, Node *, Action &);
 
 //function to print out the list of actions from the goal state
 void PRINT_SOLUTION(Node *);
 
+//Performs BFS on the Problem, and prints solution if one exists
 bool BREADTH_FIRST_SEARCH(Problem &);
+
+//macros/functions to implement depth limited search
+#define FAILURE 0
+#define CUTOFF 1
+#define SOLUTION 2
+int DEPTH_LIMITED_SEARCH(Problem &, int);
+int RECURSIVE_DLS(Node *, Problem &, int);
+
+//helper functions to see if a state is a member of either the explored or frontier sets
 bool is_in_explored(deque<State> explored, State child_state);
 bool is_in_frontier(deque<Node *> frontier, State child_state);
 
-int main(int argc, const char *argv[])
-{
-
-
-	vector<Action> all_actions = get_all_actions();
-	
+//main function
+int main(int argc, const char *argv[]){
+	vector<Action> all_actions = get_all_actions();	
 	//problem set-up
 	State initial_state({3, 0}, {3, 0}, true);
 	Action action(RIGHT, CANNIBAL, NONE);
 	State goal_state({0, 3},{0, 3}, false);
 	Problem main_problem(initial_state, goal_state, all_actions);
 
-
 	BREADTH_FIRST_SEARCH(main_problem);
 
+	//DEPTH_LIMITED_SEARCH(main_problem, 12);
+	cout << "Program end" << endl;
  	return 0;
+}
+
+//Function that implements Breadth-first search. Returns true if there is a solution, false if there is not
+bool BREADTH_FIRST_SEARCH(Problem & problem){
+	Action empty_action; //no initial action
+	Node * init_node = new Node(problem.get_initial_state(), 0, empty_action, 0); //initial node created
+
+	deque<Node *>frontier; //frontier FIFO queue
+	deque<State>explored; //explored SET 
+	frontier.push_back(init_node); //add initial node to FIFO queue
+	
+	while(true){ //while the solution has not been found or the solution search has failed
+		if(frontier.empty()){ return false;} //if the frontier is empty and no solution has been found, return false
+
+		Node * node = frontier.front(); frontier.pop_front(); //pop a node in the front of the frontier
+		State node_state = node->get_state(); //grab the state of the popped node
+		explored.push_front(node_state); //add the state to the set
+		
+		vector<Action> problem_actions = problem.get_available_actions_from(node_state); //grab all the possible actions given a state
+
+		for(vector<Action>::iterator it = problem_actions.begin(); it != problem_actions.end(); it++){ //iterate through all of these possible actions
+			Node *child = CHILD_NODE(problem, node, *it); //generate a child node given the action iterated with
+			State child_state = child->get_state(); //grab the state of the child node
+			if(! (is_in_explored(explored, child_state) || is_in_frontier(frontier, child_state) ) ){ //if the child_state is not in explored or frontier
+				if(problem.goal_test(child_state)){ //test for the solution
+					PRINT_SOLUTION(child);
+					cout << "Total Path Cost of Solution: " << child->get_path_cost() << endl;
+					return true;
+				} 
+				frontier.push_back(child);
+			}
+		}
+	}
+	return true;
+}
+
+//Functions to implement Depth-limited search, straight implementation of book pseudocode in russel/norvig
+int DEPTH_LIMITED_SEARCH(Problem & problem, int limit){
+	Action empty_action; //no initial action
+	Node * init_node = new Node(problem.get_initial_state(), 0, empty_action, 0); //initial node created
+
+	return RECURSIVE_DLS(init_node, problem, limit);
+}
+int RECURSIVE_DLS(Node * node, Problem & problem, int limit){
+	if(problem.goal_test(node->get_state())){ //test for the solution
+		PRINT_SOLUTION(node);
+		cout << "Total Path Cost of Solution: " << node->get_path_cost() << endl;
+		return SOLUTION;
+	} else if(limit == 0){
+		return CUTOFF;
+	}
+	else{
+		bool cutoff_occured = false;
+		vector<Action> problem_actions = problem.get_available_actions_from(node->get_state()); //grab all the possible actions given a state
+
+		for(vector<Action>::iterator it = problem_actions.begin(); it != problem_actions.end(); it++){ //iterate through all of these possible actions
+			Node *child = CHILD_NODE(problem, node, *it); //generate a child node given the action iterated with
+			int result = RECURSIVE_DLS(child, problem, limit - 1);
+			if(result == CUTOFF){
+				cutoff_occured = true;
+			} else if(result != FAILURE){
+				return result;
+			}
+		}
+		
+		if(cutoff_occured){
+			return CUTOFF;
+		} else {
+			return FAILURE;
+		}
+	}
 }
 
 /*
@@ -61,7 +137,6 @@ The Person and Direction enums, which are defined in Action.hpp are repeated her
 enum Person{MISSIONARY, CANNIBAL, NONE};
 enum Direction{LEFT, RIGHT};
 */
-
 vector<Action> get_all_actions(){
 	//vector in which to store all unique actions.
 	vector<Action> result_vector;
@@ -80,70 +155,22 @@ vector<Action> get_all_actions(){
 			}
 		}
 	}
-
-
 	return result_vector;
-}
-/*********** NOTE: 
-if recieving the error "stack smashing detected", add "-fno-stack-protector" to the CMakeLists.txt flags
-
-********************************************/
-bool BREADTH_FIRST_SEARCH(Problem & problem)
-{
-	Action empty_action; //no initial action
-	Node * init_node = new Node(problem.get_initial_state(), 0, empty_action, 0); //initial node created
-
-	deque<Node *>frontier; //frontier FIFO queue
-	deque<State>explored; //explored SET 
-	frontier.push_back(init_node); //add initial node to FIFO queue
-	int loopcount =  0;
-	while(true)
-	{
-		if(frontier.empty()){ return false;} //if the frontier is empty and no solution has been found, return false
-
-		Node * node = frontier.front(); frontier.pop_front(); //pop a node in the front of the frontier
-		State node_state = node->get_state(); //grab the state of the popped node
-		explored.push_front(node_state); //add the state to the set
-		
-		vector<Action> problem_actions = problem.get_available_actions_from(node_state); //grab all the possible actions given a state
-
-		for(vector<Action>::iterator it = problem_actions.begin(); it != problem_actions.end(); it++) //iterate through all of these possible actions
-		{
-			Node *child = CHILD_NODE(problem, node, *it); //generate a child node given the action iterated with
-			State child_state = child->get_state(); //grab the state of the child node
-			if(! (is_in_explored(explored, child_state) || is_in_frontier(frontier, child_state) ) ) //if the child_state is not in explored or frontier
-			{
-				if(problem.goal_test(child_state)){ PRINT_SOLUTION(child); return true;} //test for the solution
-					
-				frontier.push_back(child);
-			}
-		}
-		++loopcount;
-		 
-	}
-
-	return true;
 }
 
 //check if state is in the explored set
-bool is_in_explored(deque<State> explored, State child_state)
-{
-	for(deque<State>::iterator it = explored.begin(); it != explored.end(); it++)
-	{
+bool is_in_explored(deque<State> explored, State child_state){
+	for(deque<State>::iterator it = explored.begin(); it != explored.end(); it++){
 		if(child_state == *it) {return true;}
 	}
-
 	return false;
 }
 
 //check if state is in the nodes of the frontier queue
-bool is_in_frontier(deque<Node *> frontier, State child_state)
-{
-	for(deque<Node *>::iterator it = frontier.begin(); it != frontier.end(); it++)
-	{
+bool is_in_frontier(deque<Node *> frontier, State child_state){
+	for(deque<Node *>::iterator it = frontier.begin(); it != frontier.end(); it++){
 		if(child_state == (*it)->get_state()) {return true;}
 	}
-
 	return false;
 }
 
@@ -156,8 +183,7 @@ Node * CHILD_NODE(Problem & current_problem, Node * parent_node, Action & applie
 }
 
 //solution now prints in the correct order using recursion
-void PRINT_SOLUTION(Node * final_node)
-{
+void PRINT_SOLUTION(Node * final_node){
 	if(final_node->get_parent_node() == NULL){
 		cout << "Start State: " << endl;
 		cout << (final_node->get_state()).to_string() << endl << endl;
@@ -169,50 +195,4 @@ void PRINT_SOLUTION(Node * final_node)
 	cout << "Action: " + action_performed.to_string() << endl;
 
 	cout << (final_node->get_state()).to_string() << endl << endl;
-
-}
-
-//no unit testing framework currently, so just using a method to test the check valid action function
-//Feel free to test if I missed any edge cases
-//DELETE before submission
-void test_check_valid()
-{
-	State test1_state;
-	Action test1_action(LEFT, CANNIBAL, CANNIBAL); //wrong direction
-
-	State test2_state;
-	Action test2_action(RIGHT, CANNIBAL, CANNIBAL);
-	Action test21_action(RIGHT, NONE, NONE); //no person on boat
-
-	State test3_state({2, 1}, {2, 1}, false);
-	Action test3_action(LEFT, CANNIBAL, MISSIONARY);
-	Action test31_action(LEFT, MISSIONARY, CANNIBAL);
-	Action test32_action(LEFT, MISSIONARY, NONE);
-	Action test33_action(LEFT, CANNIBAL, NONE); //cannibals outnumber missionaries on left side
-	Action test34_action(LEFT, CANNIBAL, CANNIBAL); //too many cannibals taken
-	Action test35_action(RIGHT, CANNIBAL, MISSIONARY); //wrong direction
-
-	State test4_state({2, 1}, {2, 1}, true);
-	Action test4_action(RIGHT, MISSIONARY, MISSIONARY);
-	Action test41_action(RIGHT, MISSIONARY, NONE); //cannibals outnumber missionaries on left side
-
-	//flip numbers just for code coverage
-	State test5_state({1, 2}, {1, 2}, false);
-	Action test5_action(LEFT, MISSIONARY, MISSIONARY);
-	Action test51_action(LEFT, MISSIONARY, NONE); //cannibals outnumber missionaries on right side
-
-	cout << "TEST 1 VALUE: " << ((Action::check_valid_action(test1_state, test1_action)) ? "TRUE " : "FALSE ") << "EXPECTED: FALSE" << endl; //wrong direction
-	cout << "TEST 2 VALUE: " << ((Action::check_valid_action(test2_state, test2_action)) ? "TRUE " : "FALSE ") << "EXPECTED: TRUE" << endl;
-	cout << "TEST 21 VALUE: " << ((Action::check_valid_action(test2_state, test21_action)) ? "TRUE " : "FALSE ") << "EXPECTED: FALSE" << endl; //no person on boat
-	cout << "TEST 3 VALUE: " << ((Action::check_valid_action(test3_state, test3_action)) ? "TRUE " : "FALSE ") << "EXPECTED: TRUE" << endl;
-	cout << "TEST 31 VALUE: " << ((Action::check_valid_action(test3_state, test31_action)) ? "TRUE " : "FALSE ") << "EXPECTED: TRUE" << endl;
-	cout << "TEST 32 VALUE: " << ((Action::check_valid_action(test3_state, test32_action)) ? "TRUE " : "FALSE ") << "EXPECTED: TRUE" << endl;
-	cout << "TEST 33 VALUE: " << ((Action::check_valid_action(test3_state, test33_action)) ? "TRUE " : "FALSE ") << "EXPECTED: FALSE" << endl; //cannibals outnumber missionaries on left side
-	cout << "TEST 34 VALUE: " << ((Action::check_valid_action(test3_state, test34_action)) ? "TRUE " : "FALSE ") << "EXPECTED: FALSE" << endl; //too many cannibals taken
-	cout << "TEST 35 VALUE: " << ((Action::check_valid_action(test3_state, test35_action)) ? "TRUE " : "FALSE ") << "EXPECTED: FALSE" << endl; //wrong direction
-	cout << "TEST 4 VALUE: " << ((Action::check_valid_action(test4_state, test4_action)) ? "TRUE " : "FALSE ") << "EXPECTED: TRUE" << endl;
-	cout << "TEST 41 VALUE: " << ((Action::check_valid_action(test4_state, test41_action)) ? "TRUE " : "FALSE ") << "EXPECTED: FALSE" << endl; //cannibals outnumber missionaries on left side
-	cout << "TEST 5 VALUE: " << ((Action::check_valid_action(test5_state, test5_action)) ? "TRUE " : "FALSE ") << "EXPECTED: TRUE" << endl;
-	cout << "TEST 51 VALUE: " << ((Action::check_valid_action(test5_state, test51_action)) ? "TRUE " : "FALSE ") << "EXPECTED: FALSE" << endl; //cannibals outnumber missionaries on right side
-
 }
